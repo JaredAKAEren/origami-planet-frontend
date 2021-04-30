@@ -148,6 +148,8 @@ export default {
     methods: {
         upload() {
             if (confirm('是否要投稿?')) {
+                this.content = this.content.replace(/\n/g, '<br/>')
+                this.content = this.content.replace(/ /g, '&nbsp')
                 this.$axios
                     .post('/folder', {
                         folder: {

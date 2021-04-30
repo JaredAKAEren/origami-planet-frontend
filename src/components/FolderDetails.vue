@@ -57,6 +57,18 @@
                                             {{ folderData.folder.folderTitle }}
                                         </span>
                                     </v-row>
+                                    <v-row>
+                                        <span
+                                            v-if="
+                                                folderData.folder.folderContent
+                                            "
+                                            v-html="
+                                                folderData.folder.folderContent
+                                            "
+                                            class="text-justify"
+                                        >
+                                        </span>
+                                    </v-row>
                                     <v-row no-gutters class="my-4">
                                         <v-chip
                                             v-for="(
@@ -69,12 +81,12 @@
                                     </v-row>
                                     <!-- <v-row></v-row> -->
                                     <v-row no-gutters>
-                                        <span
+                                        <div
                                             v-if="folderData.folder.folderDate"
                                             class="text-body-2 grey--text text-light-2"
                                         >
                                             {{ folderData.folder.folderDate }}
-                                        </span>
+                                        </div>
                                     </v-row>
                                 </v-col>
                                 <v-col
