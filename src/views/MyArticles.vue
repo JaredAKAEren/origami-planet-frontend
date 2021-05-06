@@ -10,15 +10,19 @@
             class="mt-3"
         >
             <template v-slot:[`item.articleCover`]="{ item }">
-                <v-img
-                    min-height="50px"
-                    min-width="88px"
-                    :aspect-ratio="16 / 9"
-                    :src="item.articleCover"
-                    class="rounded my-3"
-                ></v-img>
+                <router-link
+                    :to="{ name: 'ArticleDetails', query: { id: item.id } }"
+                >
+                    <v-img
+                        min-height="50px"
+                        min-width="88px"
+                        :aspect-ratio="16 / 9"
+                        :src="item.articleCover"
+                        class="rounded my-3"
+                    ></v-img>
+                </router-link>
             </template>
-            <template v-slot:[`item.actions`]="{ item }">
+            <template v-if="isNowLogin" v-slot:[`item.actions`]="{ item }">
                 <v-icon small class="mr-2" @click="viewItem(item)">
                     mdi-eye
                 </v-icon>
@@ -70,12 +74,15 @@ export default {
 
             deleteSnackbar: false,
             deleteSnackbarState: 'success',
-            deleteMessage: ''
+            deleteMessage: '',
+
+            isNowLogin: false
         }
     },
 
     mounted() {
         this.userId = this.$route.params.id
+        this.isNowUser()
         // 向后端请求第一页数据并渲染
         this.getUserArticles()
     },
@@ -129,6 +136,17 @@ export default {
                     _this.deleteMessage = response.data.message
                     _this.deleteSnackbarState = 'error'
                     _this.deleteSnackbar = true
+                }
+            })
+        },
+
+        isNowUser() {
+            var _this = this
+            this.$axios.get('/who').then((response) => {
+                if (response && response.data.code === 200) {
+                    if (response.data.result == _this.userId) {
+                        _this.isNowLogin = true
+                    }
                 }
             })
         }

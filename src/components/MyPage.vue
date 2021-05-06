@@ -169,7 +169,7 @@ export default {
         }
     },
     // mounted() {
-    //     // this.handleCurrentChange()
+    //     console.log(this.getNowUser())
     // },
     methods: {
         // handleCurrentChange() {
