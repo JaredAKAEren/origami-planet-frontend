@@ -267,7 +267,7 @@ export default {
                 .get('/folder/' + this.currentPage + '/' + this.pageSize)
                 .then((response) => {
                     if (response && response.data.code === 200) {
-                        _this.folders = response.data.result
+                        _this.folders = response.data.result.content
                     }
                 })
         }
