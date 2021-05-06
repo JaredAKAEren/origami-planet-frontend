@@ -128,6 +128,13 @@
                     </v-list-item-content>
                 </v-list-item>
             </v-list>
+            <template v-slot:append>
+                <v-row justify="center" no-gutters class="py-2">
+                    <v-btn v-if="isAdmin" class="blue lighten-1 white--text" to="/admin/dashboard"
+                        >dashboard
+                    </v-btn>
+                </v-row>
+            </template>
         </v-navigation-drawer>
     </nav>
 </template>
@@ -136,6 +143,7 @@
 export default {
     data() {
         return {
+            isAdmin: false,
             // 登出对话框
             logoutDialog: false,
             // 侧边抽屉（导航栏）
@@ -189,10 +197,27 @@ export default {
         // 转向主页
         toIndex() {
             this.$router.replace('/index')
+        },
+
+        getIsAdmin() {
+            var _this = this
+            this.$axios.get('/isadmin').then((response) => {
+                if (response && response.data.code === 200) {
+                    _this.isAdmin = true
+                } else if (response && response.data.code === 400) {
+                    _this.isAdmin = false
+                } else {
+                    _this.isAdmin = false
+                }
+            })
         }
     },
     created: function () {
         this.userName = this.$store.state.user.username
+    },
+
+    mounted() {
+        this.getIsAdmin()
     }
 }
 </script>

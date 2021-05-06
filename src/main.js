@@ -20,6 +20,19 @@ Vue.use(mavonEditor)
 
 // 前端拦截
 router.beforeEach((to, from, next) => {
+    if (store.state.user && to.path.startsWith('/admin')) {
+        axios.get('/isadmin').then((response) => {
+            if (response && response.data.code === 200) {
+                next()
+            } else if (response && response.data.code === 400) {
+                next({
+                    path: "index"
+                })
+            } else {
+                next()
+            }
+        })
+    }
     if (to.meta.requireAuth) {
         if (store.state.user) {
             axios
