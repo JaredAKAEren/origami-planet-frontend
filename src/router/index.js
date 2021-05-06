@@ -98,6 +98,32 @@ const routes = [
         ]
       }
     ]
+  },
+  {
+    path: '/admin',
+    name: 'Admin',
+    component: () => import('../views/admin/Admin'),
+    meta: {
+      requireAuth: true
+    },
+    children: [
+      {
+        path: '/admin/dashboard',
+        name: 'Dashboard',
+        component: () => import('../views/admin/Index'),
+        meta: {
+          requireAuth: true
+        }
+      },
+      {
+        path: '/admin/folders',
+        name: 'AdminFolders',
+        component: () => import('../views/admin/FolderManagement'),
+        meta: {
+          requireAuth: true
+        }
+      }
+    ]
   }
 ]
 
