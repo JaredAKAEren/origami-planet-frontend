@@ -218,6 +218,7 @@ export default {
                         articleAbstract: this.article.articleAbstract,
                         articleCover: this.url,
                         articleDate: this.article.articleDate,
+                        articleState: 0,
                         articleUserId: this.$store.state.user.id,
                         articleUserName: this.$store.state.user.username
                     })

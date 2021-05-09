@@ -1,25 +1,54 @@
 <template>
-    <div>
-        <v-container class="mt-5">
+    <div class="mypage grey lighten-4">
+        <v-container class="pt-5">
             <v-row no-gutters justify="center">
                 <v-col cols="12" sm="12" md="12" lg="12" xl="9">
                     <v-row no-gutters>
-                        <v-card
-                            flat
-                            width="100%"
-                            min-height="180px"
-                            class="mb-3"
-                        >
-                            <v-card-text class="text-h4">
-                                头像 昵称 等等个人信息
-                            </v-card-text>
-                            <v-btn icon @click="editInformation">
-                                <v-icon>mdi-pencil</v-icon>
-                            </v-btn>
+                        <v-card flat width="100%" class="mb-3">
+                            <v-row no-gutters align="center" class="py-4 px-6">
+                                <v-col cols="auto">
+                                    <v-avatar size="100">
+                                        <v-img
+                                            :src="profile.profileAvatar"
+                                        ></v-img>
+                                    </v-avatar>
+                                </v-col>
+                                <v-col cols="auto" class="ml-6">
+                                    <span class="font-weight-bold text-h6">
+                                        {{ profile.profileNickname }}
+                                    </span>
+                                </v-col>
+                                <v-spacer></v-spacer>
+                                <v-col cols="auto" v-if="isNowLogin">
+                                    <v-row no-gutters>
+                                        <v-btn icon @click="editInformation">
+                                            <v-icon>mdi-pencil</v-icon>
+                                        </v-btn>
+                                    </v-row>
+                                    <v-row no-gutters>
+                                        <v-btn icon @click="toggleShow">
+                                            <v-icon>mdi-account</v-icon>
+                                        </v-btn>
+                                    </v-row>
+
+                                    <my-upload
+                                        field="file"
+                                        @crop-success="cropSuccess"
+                                        @crop-upload-success="cropUploadSuccess"
+                                        @crop-upload-fail="cropUploadFail"
+                                        v-model="show"
+                                        :width="300"
+                                        :height="300"
+                                        url="http://localhost:8443/api/covers"
+                                        img-format="jpg"
+                                        :with-credentials="true"
+                                    ></my-upload>
+                                </v-col>
+                            </v-row>
                         </v-card>
                     </v-row>
                     <v-row no-gutters>
-                        <v-col cols="12" sm="9" md="9" lg="9" xl="9">
+                        <v-col cols="12" sm="12" md="12" lg="12" xl="12">
                             <v-tabs fixed-tabs>
                                 <v-tab
                                     v-for="tab in tabs"
@@ -30,13 +59,13 @@
                             </v-tabs>
                             <router-view></router-view>
                         </v-col>
-                        <v-col cols="12" sm="3" md="3" lg="3" xl="3">
+                        <!-- <v-col cols="12" sm="3" md="3" lg="3" xl="3">
                             <v-card flat class="ml-3">
                                 <v-card-text class="text-h5">
                                     功能
                                 </v-card-text>
                             </v-card>
-                        </v-col>
+                        </v-col> -->
                     </v-row>
                 </v-col>
             </v-row>
@@ -138,21 +167,37 @@
     </div>
 </template>
 <script>
+import myUpload from 'vue-image-crop-upload/upload-2.vue'
 export default {
+    components: {
+        'my-upload': myUpload
+    },
+    inject: ['reload'],
     data() {
         return {
+            show: false,
+            avatarUrl: null,
+
             articles: [],
             username: '',
+            userId: null,
+            isNowLogin: false,
             editProfileForm: false,
 
-            profileIdInDB: null,
+            profileIdInDB: 0,
             nickName: null,
             radios: 'male',
             date: new Date().toISOString().substr(0, 10),
 
-            profile: {},
+            profile: {
+                profileAvatar: ''
+            },
 
             menu: false,
+
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            },
 
             tabs: [
                 {
@@ -163,31 +208,39 @@ export default {
                 {
                     id: 2,
                     lable: '动态',
-                    route: '/mypage/' + this.$route.params.id + '/about'
+                    route: '/mypage/' + this.$route.params.id + '/folders'
                 }
             ]
         }
     },
-    // mounted() {
-    //     console.log(this.getNowUser())
-    // },
+    mounted() {
+        this.userId = this.$route.params.id
+        this.isNowUser()
+        this.getProfile()
+    },
     methods: {
-        // handleCurrentChange() {
-        //     var _this = this
-        //     this.$axios.get('/user/article/' + this.username).then((resp) => {
-        //         if (resp && resp.status === 200) {
-        //             _this.articles = resp.data.result
-        //         }
-        //     })
-        // },
-        // editArticle(article) {
-        //     this.$router.push({
-        //         name: 'articleEditor',
-        //         params: {
-        //             article: article
-        //         }
-        //     })
-        // },
+        toggleShow() {
+            this.show = !this.show
+        },
+
+        cropSuccess() {
+            console.log('-------- crop success --------')
+        },
+
+        cropUploadSuccess(jsonData) {
+            console.log('-------- upload success --------')
+            // console.log(jsonData)
+            this.avatarUrl = jsonData.result
+            this.saveProfile()
+            // console.log(this.avatarUrl)
+        },
+
+        cropUploadFail(status, field) {
+            console.log('-------- upload fail --------')
+            console.log(status)
+            console.log('field: ' + field)
+        },
+
         editInformation() {
             this.editProfileForm = true
         },
@@ -196,7 +249,8 @@ export default {
             var _this = this
             this.$axios
                 .post('/user/profile', {
-                    id: 0,
+                    id: this.profileIdInDB,
+                    profileAvatar: this.avatarUrl,
                     profileNickname: this.nickName,
                     profileGender: this.radios,
                     profileBirthday: this.date,
@@ -206,10 +260,48 @@ export default {
                 .then((response) => {
                     if (response && response.data.code === 200) {
                         _this.profileIdInDB = response.data.result
+                        // _this.getProfile()
                         console.log(_this.profileIdInDB)
+                        this.editProfileForm = false
+                        this.reload()
                     }
                 })
+        },
+
+        getProfile() {
+            var _this = this
+            this.$axios
+                .get('/user/profile/' + this.$route.params.id)
+                .then((response) => {
+                    if (response && response.data.code === 200) {
+                        if (response.data.result) {
+                            _this.profile = response.data.result
+                            _this.profileIdInDB = _this.profile.id
+                            _this.nickName = _this.profile.profileNickname
+                            _this.radios = _this.profile.profileGender
+                            _this.date = _this.profile.profileBirthday
+                            _this.avatarUrl = _this.profile.profileAvatar
+                        }
+                    }
+                })
+        },
+
+        isNowUser() {
+            var _this = this
+            this.$axios.get('/who').then((response) => {
+                if (response && response.data.code === 200) {
+                    if (response.data.result == _this.userId) {
+                        _this.isNowLogin = true
+                    }
+                }
+            })
         }
     }
 }
 </script>
+
+<style>
+.mypage {
+    height: 100%;
+}
+</style>

@@ -15,7 +15,7 @@
                                     max-height="500"
                                 ></v-img>
                             </v-row>
-                            <v-row class="pt-10">
+                            <!-- <v-row class="pt-10">
                                 <v-spacer></v-spacer>
                                 <v-btn
                                     icon
@@ -33,7 +33,7 @@
                                 >
                                     <v-icon large>{{ collectIcon }}</v-icon>
                                 </v-btn>
-                            </v-row>
+                            </v-row> -->
                             <v-row class="my-10">
                                 <v-col
                                     cols="1"
@@ -57,7 +57,7 @@
                                             {{ folderData.folder.folderTitle }}
                                         </span>
                                     </v-row>
-                                    <v-row>
+                                    <v-row no-gutters class="mt-3">
                                         <span
                                             v-if="
                                                 folderData.folder.folderContent
@@ -88,6 +88,102 @@
                                             {{ folderData.folder.folderDate }}
                                         </div>
                                     </v-row>
+                                    <v-divider class="mt-4"></v-divider>
+
+                                    <v-row no-gutters>
+                                        <v-textarea
+                                            v-model="commentText"
+                                            auto-grow
+                                            outlined
+                                            dense
+                                            rows="1"
+                                            clearable
+                                            class="px-10 pt-10"
+                                            label="输入评论..."
+                                        ></v-textarea>
+                                    </v-row>
+                                    <v-row no-gutters>
+                                        <v-spacer></v-spacer>
+                                        <v-btn
+                                            class="mr-10 mt-n4"
+                                            color="primary"
+                                            @click="postComment"
+                                            >评论
+                                        </v-btn>
+                                    </v-row>
+
+                                    <v-row
+                                        no-gutters
+                                        v-for="(comment, index) in commentList"
+                                        :key="index"
+                                        class="mt-4 mx-10"
+                                    >
+                                        <v-card flat width="100%">
+                                            <v-row>
+                                                <v-col
+                                                    class="pr-0"
+                                                    cols="auto"
+                                                    align-self="center"
+                                                >
+                                                    <v-avatar size="48">
+                                                        <v-img
+                                                            :src="
+                                                                comment.profile
+                                                                    .profileAvatar
+                                                            "
+                                                        ></v-img>
+                                                    </v-avatar>
+                                                </v-col>
+                                                <v-col>
+                                                    <v-card flat>
+                                                        <v-card-title
+                                                            class="text-subtitle-1 pt-0"
+                                                        >
+                                                            {{
+                                                                comment.profile
+                                                                    .profileNickname
+                                                            }}
+                                                        </v-card-title>
+                                                        <v-card-text>
+                                                            {{
+                                                                comment.comment
+                                                                    .commentText
+                                                            }}
+                                                        </v-card-text>
+                                                        <v-card-text
+                                                            class="pt-0"
+                                                        >
+                                                            {{
+                                                                comment.comment
+                                                                    .commentDate
+                                                            }}
+                                                        </v-card-text>
+                                                    </v-card>
+                                                </v-col>
+                                                <v-col
+                                                    cols="auto"
+                                                    v-if="
+                                                        comment.profile
+                                                            .profileUserId ===
+                                                        currentUser
+                                                    "
+                                                >
+                                                    <v-btn
+                                                        text
+                                                        class="red--text"
+                                                        @click="
+                                                            deleteComment(
+                                                                comment.comment
+                                                                    .id
+                                                            )
+                                                        "
+                                                        >删除
+                                                    </v-btn>
+                                                </v-col>
+                                            </v-row>
+                                            <v-divider inset></v-divider>
+                                        </v-card>
+                                    </v-row>
                                 </v-col>
                                 <v-col
                                     cols="1"
@@ -105,7 +201,11 @@
                 <v-col cols="12" sm="3" md="3" lg="3" xl="2" class="mt-10">
                     <v-row align="center">
                         <v-col cols="auto">
-                            <v-avatar color="grey" size="38"></v-avatar>
+                            <v-avatar size="38">
+                                <v-img
+                                    :src="folderData.profile.profileAvatar"
+                                ></v-img>
+                            </v-avatar>
                         </v-col>
                         <v-col class="pl-0">
                             <span class="font-weight-bold text-h6">
@@ -113,7 +213,7 @@
                             </span>
                         </v-col>
                     </v-row>
-                    <v-row class="pl-3" align="center">
+                    <!-- <v-row class="pl-3" align="center">
                         <v-btn
                             depressed
                             dark
@@ -126,7 +226,7 @@
                             <v-icon small>mdi-plus</v-icon>
                             <span class="font-weight-bold">加关注</span>
                         </v-btn>
-                    </v-row>
+                    </v-row> -->
                 </v-col>
             </v-row>
         </v-container>
@@ -155,12 +255,21 @@ export default {
 
             iscollect: false,
             collectIcon: 'mdi-star-outline',
-            collectIconColor: null
+            collectIconColor: null,
+
+            commentList: [],
+
+            commentText: null,
+
+            commentIdInDB: 0,
+
+            currentUser: null
         }
     },
 
     mounted() {
         this.folderID = this.$route.params.fid
+        this.currentUser = this.$store.state.user.id
         // console.log(this.$route.params.fid)
         this.getOneFolder(this.folderID)
     },
@@ -171,6 +280,7 @@ export default {
             this.$axios.get('/folder/' + id).then((response) => {
                 if (response && response.data.code === 200) {
                     _this.folderData = response.data.result
+                    _this.getComments()
                 }
             })
         },
@@ -195,6 +305,47 @@ export default {
                 this.collectIcon = 'mdi-star-outline'
                 this.collectIconColor = null
             }
+        },
+
+        postComment() {
+            var _this = this
+            // console.log(this.commentText)
+            this.$axios
+                .post('/comment', {
+                    id: this.commentIdInDB,
+                    commentText: this.commentText,
+                    userId: this.$store.state.user.id,
+                    folderId: this.folderData.folder.id,
+                    commentDate: null
+                })
+                .then((response) => {
+                    if (response && response.data.code === 200) {
+                        // console.log(response.data.result)
+                        _this.getComments()
+                    }
+                })
+        },
+
+        getComments() {
+            this.$axios
+                .get('/comment/folder/' + this.folderData.folder.id)
+                .then((response) => {
+                    if (response && response.data.code === 200) {
+                        // console.log(response.data.result)
+                        this.commentList = response.data.result
+                    }
+                })
+        },
+
+        deleteComment(id) {
+            this.$axios.post('/comment/delete/' + id).then((response) => {
+                if (response && response.data.code === 200) {
+                    console.log(response.data.result)
+                    this.getComments()
+                } else {
+                    console.log(response.data.message)
+                }
+            })
         }
     }
 }

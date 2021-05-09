@@ -9,34 +9,59 @@
                             <v-subheader inset class="text-h6 font-weight-bold">
                                 最新教程
                             </v-subheader>
-                            <v-spacer></v-spacer>
+                            <!-- <v-spacer></v-spacer>
                             <v-btn
                                 text
                                 class="mr-13 grey--text font-weight-light"
-                                >查看更多</v-btn
-                            >
+                                >查看更多
+                            </v-btn> -->
                         </v-row>
                         <v-slide-group show-arrows>
-                            <v-slide-item v-for="n in 12" :key="n">
-                                <v-hover v-slot:default="{ hover }">
-                                    <v-card
-                                        flat
-                                        width="200px"
-                                        class="ma-2 grey lighten-5"
-                                        rounded="lg"
-                                    >
-                                        <v-responsive :aspect-ratio="3 / 2">
-                                            <v-card-title>
-                                                教程{{ n }}
-                                            </v-card-title>
-                                        </v-responsive>
-                                        <v-overlay
-                                            absolute
-                                            :value="hover"
-                                            opacity="0.16"
-                                        ></v-overlay>
-                                    </v-card>
-                                </v-hover>
+                            <v-slide-item
+                                v-for="(diagram, index) in diagrams"
+                                :key="index"
+                            >
+                                <router-link
+                                    class="article-link"
+                                    :to="'diagram/' + diagram.diagram.id"
+                                >
+                                    <v-hover v-slot:default="{ hover }">
+                                        <v-card
+                                            flat
+                                            width="200px"
+                                            class="ma-2 grey lighten-5"
+                                            rounded="lg"
+                                        >
+                                            <v-img
+                                                aspect-ratio="1.5"
+                                                class="rounded-lg align-end"
+                                                :src="
+                                                    diagram.diagram.diagramCover
+                                                "
+                                            >
+                                                <v-card-title
+                                                    class="pb-2 pl-3 font-weight-black"
+                                                >
+                                                    <v-sheet
+                                                        elevation="1"
+                                                        rounded="lg"
+                                                        class="px-1"
+                                                    >
+                                                        {{
+                                                            diagram.diagram
+                                                                .diagramTitle
+                                                        }}
+                                                    </v-sheet>
+                                                </v-card-title>
+                                            </v-img>
+                                            <v-overlay
+                                                absolute
+                                                :value="hover"
+                                                opacity="0.16"
+                                            ></v-overlay>
+                                        </v-card>
+                                    </v-hover>
+                                </router-link>
                             </v-slide-item>
                         </v-slide-group>
                     </v-row>
@@ -50,6 +75,7 @@
                             <v-btn
                                 text
                                 class="mr-13 grey--text font-weight-light"
+                                :to="{ path: '/folders' }"
                                 >查看更多</v-btn
                             >
                         </v-row>
@@ -73,9 +99,7 @@
                                             <v-img
                                                 aspect-ratio="1"
                                                 class="rounded-lg"
-                                                :src="
-                                                    folder.folder.folderCover
-                                                "
+                                                :src="folder.folder.folderCover"
                                             >
                                                 <v-overlay
                                                     absolute
@@ -91,23 +115,28 @@
                                             <span
                                                 class="text-body-1 font-weight-bold"
                                             >
-                                                {{
-                                                    folder.folder.folderTitle
-                                                }}
+                                                {{ folder.folder.folderTitle }}
                                             </span>
                                         </v-row>
                                         <v-row no-gutters class="pt-1">
                                             <v-col cols="auto" class="pa-0">
-                                                <v-avatar
-                                                    color="grey"
-                                                    size="22"
-                                                ></v-avatar>
+                                                <v-avatar size="22">
+                                                    <v-img
+                                                        :src="
+                                                            folder.profile
+                                                                .profileAvatar
+                                                        "
+                                                    ></v-img>
+                                                </v-avatar>
                                             </v-col>
                                             <v-col class="pa-0 pl-1">
                                                 <span
                                                     class="grey--text lighten-3 font-weight-light text-body-2"
                                                 >
-                                                    {{folder.profile.profileNickname}}
+                                                    {{
+                                                        folder.profile
+                                                            .profileNickname
+                                                    }}
                                                 </span>
                                             </v-col>
                                         </v-row>
@@ -126,6 +155,7 @@
                             <v-btn
                                 text
                                 class="mr-13 grey--text font-weight-light"
+                                :to="{ path: '/articles' }"
                                 >查看更多</v-btn
                             >
                         </v-row>
@@ -231,6 +261,7 @@ export default {
             // 文章列表
             articles: [],
             folders: [],
+            diagrams: [],
             // 文章数（后端）
             // totalArticles: 0,
             // 当前页
@@ -245,13 +276,16 @@ export default {
         // 向后端请求第一页数据并渲染
         this.handleCurrentChange()
         this.getLastestFolders()
+        this.getLastestDiagram()
     },
     methods: {
         // 向后端请求当前页文章
         handleCurrentChange() {
             var _this = this
             this.$axios
-                .get('/article/' + this.currentPage + '/' + this.pageSize)
+                .get(
+                    '/article/' + this.currentPage + '/' + this.pageSize + '/1'
+                )
                 .then((response) => {
                     if (response && response.data.code === 200) {
                         _this.articles = response.data.result.content
@@ -264,10 +298,23 @@ export default {
         getLastestFolders() {
             var _this = this
             this.$axios
-                .get('/folder/' + this.currentPage + '/' + this.pageSize)
+                .get('/folder/' + this.currentPage + '/' + this.pageSize + '/1')
                 .then((response) => {
                     if (response && response.data.code === 200) {
                         _this.folders = response.data.result.content
+                    }
+                })
+        },
+
+        getLastestDiagram() {
+            var _this = this
+            this.$axios
+                .get(
+                    '/diagram/' + this.currentPage + '/' + this.pageSize + '/1'
+                )
+                .then((response) => {
+                    if (response && response.data.code === 200) {
+                        _this.diagrams = response.data.result.content
                     }
                 })
         }

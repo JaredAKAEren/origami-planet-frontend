@@ -11,7 +11,7 @@
             <v-toolbar-title class="grey--text pl-4">
                 <v-btn text rounded to="/index">
                     <v-icon large class="mr-1 cyan--text text--lighten-1"
-                        >mdi-earth
+                        >mdi-view-dashboard-variant
                     </v-icon>
                     <span
                         class="grey--text text--light-1 font-weight-light text-h5"
@@ -38,13 +38,34 @@
                     :key="link.text"
                     :to="link.route"
                 >
-                    <v-list-item-icon>
+                    <v-list-item-icon class="mr-4">
                         <v-icon>{{ link.icon }}</v-icon>
                     </v-list-item-icon>
                     <v-list-item-content>
                         <v-list-item-title>{{ link.text }}</v-list-item-title>
                     </v-list-item-content>
                 </v-list-item>
+
+                <v-list-group>
+                    <template v-slot:activator>
+                        <v-list-item-icon class="mr-4">
+                            <v-icon>mdi-image</v-icon>
+                        </v-list-item-icon>
+                        <v-list-item-title>图解管理</v-list-item-title>
+                    </template>
+                    <v-list-item
+                        v-for="(diagram, index) in diagrams"
+                        :key="index"
+                        :to="diagram.route"
+                    >
+                        <v-icon class="mr-4 ml-7">{{ diagram.icon }}</v-icon>
+                        <v-list-item-content>
+                            <v-list-item-title>{{
+                                diagram.text
+                            }}</v-list-item-title>
+                        </v-list-item-content>
+                    </v-list-item>
+                </v-list-group>
             </v-list>
         </v-navigation-drawer>
     </nav>
@@ -58,8 +79,29 @@ export default {
 
             // 侧面抽屉路由
             links: [
-                { icon: 'mdi-home', text: '主页', route: '/admin/dashboard' },
-                { icon: 'mdi-image', text: '动态管理', route: '/admin/folders' },
+                {
+                    icon: 'mdi-image',
+                    text: '动态管理',
+                    route: '/admin/folders'
+                },
+                {
+                    icon: 'mdi-book-open-outline',
+                    text: '文章管理',
+                    route: '/admin/articles'
+                }
+            ],
+
+            diagrams: [
+                {
+                    icon: 'mdi-cog',
+                    text: '管理',
+                    route: '/admin/diagram/management'
+                },
+                {
+                    icon: 'mdi-upload',
+                    text: '上传图解',
+                    route: '/admin/diagram/upload'
+                }
             ]
         }
     },

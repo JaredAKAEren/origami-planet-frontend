@@ -2,7 +2,7 @@
     <div>
         <v-card class="ma-3">
             <v-card-title>
-                动态管理
+                图解教程管理
                 <v-spacer></v-spacer>
                 <v-text-field
                     v-model="search"
@@ -22,34 +22,34 @@
                 hide-default-footer
                 class="mt-3"
             >
-                <template v-slot:[`item.folder.folderCover`]="{ item }">
+                <template v-slot:[`item.diagram.diagramCover`]="{ item }">
                     <v-img
                         max-width="100"
                         :aspect-ratio="16 / 9"
-                        :src="item.folder.folderCover"
+                        :src="item.diagram.diagramCover"
                         class="rounded my-3"
                     ></v-img>
                 </template>
 
-                <template v-slot:[`item.folder.folderState`]="{ item }">
+                <template v-slot:[`item.diagram.diagramState`]="{ item }">
                     <v-switch
                         :input-value="
-                            item.folder.folderState == 0 ? false : true
+                            item.diagram.diagramState == 0 ? false : true
                         "
                         color="green"
                         inset
-                        @change="editState(item.folder)"
+                        @change="editState(item.diagram)"
                     ></v-switch>
                 </template>
 
                 <template v-slot:[`item.actions`]="{ item }">
                     <router-link
                         class="folder-link"
-                        :to="{ path: '/folder/' + item.folder.id }"
+                        :to="{ path: '/diagram/' + item.diagram.id }"
                     >
                         <v-icon small class="mr-2"> mdi-eye </v-icon>
                     </router-link>
-                    <v-icon small @click="deleteItem(item.folder.id)">
+                    <v-icon small @click="deleteItem(item.diagram.id)">
                         mdi-delete
                     </v-icon>
                 </template>
@@ -70,12 +70,12 @@ export default {
         return {
             search: '',
             headers: [
-                { text: 'ID', value: 'folder.id' },
-                { text: '封面', value: 'folder.folderCover' },
-                { text: '标题', value: 'folder.folderTitle' },
+                { text: 'ID', value: 'diagram.id' },
+                { text: '封面', value: 'diagram.diagramCover' },
+                { text: '标题', value: 'diagram.diagramTitle' },
                 { text: '作者', value: 'username' },
-                { text: '时间', value: 'folder.folderDate' },
-                { text: '发布状态', value: 'folder.folderState' },
+                { text: '时间', value: 'diagram.diagramDate' },
+                { text: '发布状态', value: 'diagram.diagramState' },
                 { text: '功能', value: 'actions', sortable: false }
             ],
             folders: [],
@@ -104,7 +104,7 @@ export default {
         getOnePageFolders() {
             var _this = this
             this.$axios
-                .get('/folder/' + this.currentPage + '/' + this.pageSize)
+                .get('/diagram/' + this.currentPage + '/' + this.pageSize)
                 .then((response) => {
                     if (response && response.data.code === 200) {
                         _this.folders = response.data.result.content
@@ -114,9 +114,9 @@ export default {
         },
 
         editState(folder) {
-            folder.folderState = folder.folderState ? 0 : 1
+            folder.diagramState = folder.diagramState ? 0 : 1
             // console.log(folder.folderState)
-            this.$axios.post('/folder/state', folder).then((response) => {
+            this.$axios.post('/diagram/state', folder).then((response) => {
                 if (response && response.data.code === 200) {
                     console.log(response.data.result)
                 } else if (response && response.data.code === 400) {
@@ -127,7 +127,7 @@ export default {
 
         deleteItem(id) {
             var _this = this
-            this.$axios.get('folder/delete/' + id).then((response) => {
+            this.$axios.get('/diagram/delete/' + id).then((response) => {
                 if (response && response.data.code === 200) {
                     console.log(response.data.result)
                     _this.getOnePageFolders()

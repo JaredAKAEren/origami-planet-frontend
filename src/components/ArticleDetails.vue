@@ -53,7 +53,13 @@
                                         cols="auto"
                                         align-self="center"
                                     >
-                                        <v-avatar color="grey" size="48">
+                                        <v-avatar size="48">
+                                            <v-img
+                                                :src="
+                                                    comment.profile
+                                                        .profileAvatar
+                                                "
+                                            ></v-img>
                                         </v-avatar>
                                     </v-col>
                                     <v-col>
@@ -61,7 +67,10 @@
                                             <v-card-title
                                                 class="text-subtitle-1 pt-0"
                                             >
-                                                {{ comment.user.username }}
+                                                {{
+                                                    comment.profile
+                                                        .profileNickname
+                                                }}
                                             </v-card-title>
                                             <v-card-text>
                                                 {{
@@ -77,7 +86,10 @@
                                     </v-col>
                                     <v-col
                                         cols="auto"
-                                        v-if="comment.user.id === currentUser"
+                                        v-if="
+                                            comment.profile.profileUserId ===
+                                            currentUser
+                                        "
                                     >
                                         <v-btn
                                             text

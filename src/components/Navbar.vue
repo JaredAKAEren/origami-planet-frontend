@@ -105,11 +105,13 @@
             <v-col class="mt-5">
                 <v-row justify="center">
                     <v-avatar size="80">
-                        <img src="../assets/avatar-1.png" alt="" />
+                        <img :src="profile.profileAvatar" alt="" />
                     </v-avatar>
                 </v-row>
                 <v-row justify="center">
-                    <p class="white--text subtitle mt-2">{{ userName }}</p>
+                    <p class="subtitle mt-2">
+                        {{ profile.profileNickname }}
+                    </p>
                 </v-row>
             </v-col>
 
@@ -130,7 +132,10 @@
             </v-list>
             <template v-slot:append>
                 <v-row justify="center" no-gutters class="py-2">
-                    <v-btn v-if="isAdmin" class="blue lighten-1 white--text" to="/admin/dashboard"
+                    <v-btn
+                        v-if="isAdmin"
+                        class="blue lighten-1 white--text"
+                        to="/admin/folders"
                         >dashboard
                     </v-btn>
                 </v-row>
@@ -150,6 +155,7 @@ export default {
             drawer: false,
             // 当前登录用户的用户名
             userName: '',
+            userId: null,
             // 侧面抽屉路由
             links: [
                 { icon: 'mdi-home', text: '主页', route: '/index' },
@@ -157,6 +163,11 @@ export default {
                     icon: 'mdi-book-open-outline',
                     text: '写文章',
                     route: '/articleEditor'
+                },
+                {
+                    icon: 'mdi-image',
+                    text: '投稿动态',
+                    route: '/upload'
                 },
                 {
                     icon: 'mdi-account',
@@ -172,7 +183,12 @@ export default {
                     route: '/articleEditor'
                 },
                 { icon: 'mdi-image', text: '分享', route: '/upload' }
-            ]
+            ],
+
+            profile: {
+                profileAvatar: null,
+                profileNickname: null
+            }
         }
     },
     methods: {
@@ -196,7 +212,7 @@ export default {
 
         // 转向主页
         toIndex() {
-            this.$router.replace('/index')
+            this.$router.push('/index')
         },
 
         getIsAdmin() {
@@ -210,14 +226,27 @@ export default {
                     _this.isAdmin = false
                 }
             })
+        },
+
+        getProfile() {
+            var _this = this
+            this.$axios.get('/user/profile/' + this.userId).then((response) => {
+                if (response && response.data.code === 200) {
+                    if (response.data.result) {
+                        _this.profile = response.data.result
+                    }
+                }
+            })
         }
     },
     created: function () {
         this.userName = this.$store.state.user.username
+        this.userId = this.$store.state.user.id
     },
 
     mounted() {
         this.getIsAdmin()
+        this.getProfile()
     }
 }
 </script>

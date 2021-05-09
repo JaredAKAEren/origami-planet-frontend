@@ -14,7 +14,16 @@
                 >
                     <v-hover v-slot:default="{ hover }">
                         <v-card rounded="lg">
-                            <v-img class="rounded-lg" :src="image"></v-img>
+                            <v-img class="rounded-lg" :src="image">
+                                <v-btn
+                                    depressed
+                                    x-small
+                                    color="#424242"
+                                    class="white--text ma-1"
+                                >
+                                    {{ index + 1 }}
+                                </v-btn>
+                            </v-img>
                             <v-overlay
                                 absolute
                                 :value="hover"
@@ -43,6 +52,7 @@
                 <v-spacer></v-spacer>
             </v-row>
         </v-card>
+
         <!-- </div> -->
         <v-container>
             <v-col>
@@ -50,7 +60,7 @@
                     <v-card flat width="100%">
                         <v-row no-gutters class="ml-3 py-1">
                             <v-text-field
-                                v-model="folder.folderTitle"
+                                v-model="title"
                                 type="text"
                                 placeholder="标题"
                                 solo
@@ -61,7 +71,7 @@
                                 <template v-slot:append>
                                     <span
                                         class="grey--text text-lighten-3 caption"
-                                        >{{ folder.folderTitle.length }}/32
+                                        >{{ title.length }}/32
                                     </span>
                                 </template>
                             </v-text-field>
@@ -69,7 +79,7 @@
                         <v-divider class="grey lighten-3"></v-divider>
                         <v-row no-gutters class="ml-3">
                             <v-textarea
-                                v-model="folder.folderContent"
+                                v-model="content"
                                 solo
                                 flat
                                 counter="3000"
@@ -114,7 +124,7 @@
                         class="white--text text-body-1 font-weight-bold blue lighten-2"
                         @click="upload"
                     >
-                        投稿
+                        上传
                     </v-btn>
                     <v-spacer></v-spacer>
                 </v-row>
@@ -127,75 +137,55 @@
 export default {
     data() {
         return {
-            showUpImages: false,
+            showUpImages: true,
 
-            showTags: false,
+            showTags: true,
 
             tag: '',
 
-            tags: [],
+            tags: ['天马test'],
 
-            images: [],
+            images: [
+                'http://localhost:8443/api/file/455yyv.jpg',
+                'http://localhost:8443/api/file/fxvtp8.jpg',
+                'http://localhost:8443/api/file/o8gxrn.jpg'
+            ],
 
             imageFile: null,
 
-            folder: {
-                id: 0,
-                folderTitle: '',
-                folderContent: '',
-                folderCover: '',
-                folderState: 0,
-                folderDate: null,
-                folderUserId: this.$store.state.user.id
-            }
-        }
-    },
+            title: '天马test',
 
-    mounted() {
-        if (this.$route.params.folderId) {
-            this.getOneFolder(this.$route.params.folderId)
+            content: '天马test'
         }
     },
 
     methods: {
-        getOneFolder(id) {
-            var _this = this
-            this.$axios.get('/folder/' + id).then((response) => {
-                if (response && response.data.code === 200) {
-                    response.data.result.image.forEach((element) => {
-                        _this.images.push(element.imageUrl)
-                    })
-                    response.data.result.tag.forEach((element) => {
-                        _this.tags.push(element.tagName)
-                    })
-                    _this.folder = response.data.result.folder
-                    _this.showUpImages = true
-                    _this.showTags = true
-                }
-            })
-        },
-
         upload() {
+            var cover = this.images.pop()
+            // var cover = 'http://localhost:8443/api/file/l5lsg0.jpg'
+            // console.log(cover)
+            // console.log(this.images)
             if (confirm('是否要投稿?')) {
-                this.folder.folderContent = this.folder.folderContent.replace(
-                    /\n/g,
-                    '<br/>'
-                )
-                this.folder.folderContent = this.folder.folderContent.replace(
-                    / /g,
-                    '&nbsp'
-                )
-                this.folder.folderCover = this.images[0]
+                this.content = this.content.replace(/\n/g, '<br/>')
+                this.content = this.content.replace(/ /g, '&nbsp')
                 this.$axios
-                    .post('/folder', {
-                        folder: this.folder,
+                    .post('/diagram', {
+                        diagram: {
+                            id: 0,
+                            diagramTitle: this.title,
+                            diagramContent: this.content,
+                            diagramCover: cover,
+                            diagramState: 0,
+                            diagramDate: null,
+                            diagramUserId: this.$store.state.user.id
+                        },
                         tags: this.tags,
                         images: this.images
                     })
                     .then((response) => {
                         if (response && response.data.code === 200) {
                             console.log(response.data.result)
-                            this.$router.replace('/index')
+                            this.$router.replace('/admin/diagram/management')
                         }
                     })
             }

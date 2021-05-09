@@ -12,6 +12,11 @@ import MyArticles from '../views/MyArticles.vue'
 import Upload from '../components/Upload.vue'
 import FolderDetails from '../components/FolderDetails.vue'
 
+const originalPush = VueRouter.prototype.push
+VueRouter.prototype.push = function push(location) {
+  return originalPush.call(this, location).catch(err => err)
+}
+
 Vue.use(VueRouter)
 
 const routes = [
@@ -64,6 +69,22 @@ const routes = [
         }
       },
       {
+        path: '/folders',
+        name: 'Folder',
+        component: ()=>import('../components/AllFolders'),
+        meta: {
+          requireAuth: true
+        }
+      },
+      {
+        path: '/articles',
+        name: 'Article',
+        component: ()=>import('../components/AllArticles'),
+        meta: {
+          requireAuth: true
+        }
+      },
+      {
         path: '/folder/:fid',
         name: 'FolderDetails',
         component: FolderDetails,
@@ -94,8 +115,24 @@ const routes = [
             meta: {
               requireAuth: true
             }
+          },
+          {
+            path: '/mypage/:id/folders',
+            name: 'MyFolders',
+            component: ()=>import('../views/MyFolder'),
+            meta: {
+              requireAuth: true
+            }
           }
         ]
+      },
+      {
+        path: '/diagram/:did',
+        name: 'DiagramDetails',
+        component: ()=>import('../components/DiagramDetails'),
+        meta: {
+          requireAuth: true
+        },
       }
     ]
   },
@@ -119,6 +156,30 @@ const routes = [
         path: '/admin/folders',
         name: 'AdminFolders',
         component: () => import('../views/admin/FolderManagement'),
+        meta: {
+          requireAuth: true
+        }
+      },
+      {
+        path: '/admin/articles',
+        name: 'AdminArticles',
+        component: () => import('../views/admin/ArticleManagement'),
+        meta: {
+          requireAuth: true
+        }
+      },
+      {
+        path: '/admin/diagram/management',
+        name: 'AdminDiagram',
+        component: () => import('../views/admin/DiagramManagement'),
+        meta: {
+          requireAuth: true
+        }
+      },
+      {
+        path: '/admin/diagram/upload',
+        name: 'AdminDiagramUpload',
+        component: () => import('../views/admin/DiagramUpload'),
         meta: {
           requireAuth: true
         }
